@@ -5,8 +5,14 @@
     app.AppModule =
         ng.core.NgModule({
             imports: [ ng.platformBrowser.BrowserModule ],
-            declarations: [ app.AppAuthorComponent, app.AppAuthorsCollectionComponent,  ],
-            bootstrap: [ app.AppAuthorsCollectionComponent ]
+            declarations: [
+                app.AppAuthorComponent,
+                app.AppAuthorsCollectionComponent,
+                app.AppPublicationComponent,
+                app.AppPublicationCollectionComponent,
+                app.AppComponent
+            ],
+            bootstrap: [ app.AppComponent ]
         })
             .Class({
                 constructor: function() {}

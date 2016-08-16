@@ -1,13 +1,19 @@
 /**
  * Created by a.gilmullin on 12.08.2016.
  */
-(function(app) {
+(function (app) {
     app.AppComponent =
         ng.core.Component({
-            selector: 'my-app',
-            template: '<h1>My Lol Angular 2 App</h1>'
+            selector: 'sc-app',
+            templateUrl: '../components/app.html',
+            entryComponents: [app.AppAuthorComponent,
+                app.AppAuthorsCollectionComponent,
+                app.AppPublicationComponent,
+                app.AppPublicationCollectionComponent,
+            ]
         })
             .Class({
-                constructor: function() {}
+                constructor: function () {
+                }
             });
 })(window.app || (window.app = {}));
