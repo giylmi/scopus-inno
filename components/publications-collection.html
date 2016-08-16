@@ -1,24 +1,23 @@
 <div class="row">
-    <sc-publication></sc-publication>
     <div class="page-header">
+        <p class="pull-right" ng-if="$ctrl.orderProp === 'citations'" ng-click="$ctrl.reorderBy('lastCited')">most cited | <a>last cited</a></p>
+        <p class="pull-right" ng-if="$ctrl.orderProp === 'lastCited'" ng-click="$ctrl.reorderBy('citations')"><a>most cited</a> | last cited</p>
         <h4>Publications</h4>
         <div class="clearfix"></div>
     </div>
     <div class="row">
+
         <ul class="list-group">
-            <li class="list-group-item">
-                <div>
-                    <h4>Innopolis university-A new it resource for Russia <small>(Conference Paper)</small></h4>
-                </div>
-                <p class="pull-right">Cited by 10 documents</p>
-                <p>Kondratyev, D.a,  Tormasov, A.a,  Stanko, T.a,  Jones, R.C.b,  Taran, G.c</p>
+            <li class="list-group-item" ng-repeat="pub in $ctrl.filteredPublications | orderBy:$ctrl.orderProp:true">
+                <sc-publication pub="pub"></sc-publication>
             </li>
-            <li class="list-group-item">
-                <sc-publication></sc-publication>
-            </li>
-            <li class="list-group-item">
-                <sc-publication></sc-publication>
-            </li>
+        </ul>
+        <ul uib-pagination
+                ng-model="$ctrl.currentPage"
+                total-items="$ctrl.totalItems"
+                boundary-links="true"
+                ng-change="$ctrl.pageChanged()"
+        >
         </ul>
     </div>
 </div>
