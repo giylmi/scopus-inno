@@ -8,7 +8,7 @@
     <div class="row">
 
         <ul class="list-group">
-            <li class="list-group-item" ng-repeat="pub in $ctrl.filteredPublications | orderBy:$ctrl.orderProp:true">
+            <li class="list-group-item" ng-repeat="pub in $ctrl.filteredPublications">
                 <sc-publication pub="pub"></sc-publication>
             </li>
         </ul>
@@ -16,6 +16,7 @@
                 ng-model="$ctrl.currentPage"
                 total-items="$ctrl.totalItems"
                 boundary-links="true"
+                items-per-page="$ctrl.itemsPerPage"
                 ng-change="$ctrl.pageChanged()"
         >
         </ul>

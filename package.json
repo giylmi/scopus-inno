@@ -14,7 +14,8 @@
     "angular-route": "1.5.x",
     "bootstrap": "3.3.x",
     "jquery": "2.2.x",
-    "angular-ui-bootstrap": "2.0.2"
+    "angular-ui-bootstrap": "2.0.2",
+    "angular-local-storage": "^0.2.7"
   },
   "devDependencies": {
     "concurrently": "^2.0.0",
