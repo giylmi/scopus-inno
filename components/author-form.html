@@ -31,8 +31,10 @@
                 <img class="img-responsive" ng-if="$ctrl.author.photo" ng-src="{{$ctrl.author.photo}}" alt="">
                 <img class="img-responsive" ng-if="!$ctrl.author.photo" src="images/no-avatar.jpg" alt="">
             </div>
-            <div class="col-sm-6">
+            <div ng-if="$ctrl.scAuthor" class="col-sm-6">
                 <h4>{{$ctrl.scAuthor.name}}</h4>
+                <small>{{$ctrl.scAuthor.id}}</small>
+                <p>{{$ctrl.scAuthor.publications}}</p>
             </div>
         </div>
     </div>

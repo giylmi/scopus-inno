@@ -95,7 +95,7 @@ var app = angular.module('scopusInnopolisApp', [
                 {
                     method: 'get',
                     url: 'http://api.elsevier.com/content/author/author_id/' + $ctrl.author.id,
-                    params: {apiKey: '6476ffc5bf77cddd275cc28a3c71b2fe', 'self-citation': 'include', 'view' : 'ENHANCED'}
+                    params: {apiKey: '6476ffc5bf77cddd275cc28a3c71b2fe'}
                 })
                 .then(function (response) {
                         var result = eval(response.data);
@@ -104,17 +104,25 @@ var app = angular.module('scopusInnopolisApp', [
                             var scAuthor = scAuthors[0];
                             var preferredName = scAuthor['author-profile']['preferred-name'];
                             $ctrl.scAuthor = {
-                                name: preferredName['given-name'] + ' ' + preferredName['surname']
+                                name: preferredName['given-name'] + ' ' + preferredName['surname'],
+                                id: $ctrl.author.id
                             };
                             console.log(scAuthor);
                             console.log($ctrl.scAuthor);
+                            $http({
+                                method: 'get',
+                                url: 'http://api.elsevier.com/content/search/scopus',
+                                params: {
+                                    apiKey: "6476ffc5bf77cddd275cc28a3c71b2fe",
+                                    query: 'au-id(' + $ctrl.author.id + ')'
+                                }
+                            });
                         } else {
                             $ctrl.scAuthor = null;
                         }
                     }
                 );
-        }
-        ;
+        };
         this.save = function () {
             if (localStorageService.isSupported && ($ctrl.scAuthor)) {
                 if ($ctrl.scAuthor) {
