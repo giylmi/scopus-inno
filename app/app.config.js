@@ -11,6 +11,6 @@ angular.module('scopusInnopolisApp').config(['$locationProvider', '$routeProvide
         }).otherwise('/');
 
         localStorageServiceProvider.setPrefix('scInnopolisApp');
-        localStorageServiceProvider.setStorageCookie(0, '/');
+        localStorageServiceProvider.setStorageCookie(0, '/')
     }
 ]);

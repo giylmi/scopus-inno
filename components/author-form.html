@@ -28,13 +28,20 @@
         </div>
         <div class="row">
             <div class="col-sm-4">
-                <img class="img-responsive" ng-if="$ctrl.author.photo" ng-src="{{$ctrl.author.photo}}" alt="">
-                <img class="img-responsive" ng-if="!$ctrl.author.photo" src="images/no-avatar.jpg" alt="">
+                <img class="img-responsive" ng-src="{{$ctrl.author.photo ? $ctrl.author.photo :
+                ($ctrl.preview.photo ? $ctrl.preview.photo : 'images/no-avatar.jpg')}}" alt="">
+                <!--<img class="img-responsive" ng-if="!$ctrl.author.photo" src="images/no-avatar.jpg" alt="">-->
             </div>
-            <div ng-if="$ctrl.scAuthor" class="col-sm-6">
-                <h4>{{$ctrl.scAuthor.name}}</h4>
-                <small>{{$ctrl.scAuthor.id}}</small>
-                <p>{{$ctrl.scAuthor.publications}}</p>
+            <div class="col-sm-6" ng-if="$ctrl.scopusLoading">
+                <img src="images/preloader.gif" alt="">
+            </div>
+            <div ng-if="!$ctrl.scopusLoading && ($ctrl.author.id.length > 0) && !$ctrl.preview" class="col-sm-6">
+                <p>Author with id {{$ctrl.author.id}} is not found.</p>
+            </div>
+            <div ng-if="!$ctrl.scopusLoading && $ctrl.preview" class="col-sm-6">
+                <h4>{{$ctrl.preview.name}}</h4>
+                <small>{{$ctrl.preview.id}}</small>
+                <p>{{$ctrl.preview.publications}}</p>
             </div>
         </div>
     </div>
@@ -45,13 +52,15 @@
     </div>
     <div class="row">
         <ul class="list-group">
-            <li class="list-group-item" ng-repeat="author in $ctrl.authors">
+            <li class="list-group-item" ng-model="$ctrl.authors" ng-repeat="author in $ctrl.authors | orderMapValuesBy:'name'">
                 <div class="media">
                     <div class="media-left">
-                        <img class="media-object" style="max-width: 100px;" ng-src="{{author.photo ? author.photo : 'images/no-avatar.jpg'}}">
+                        <img class="media-object" style="max-width: 100px;"
+                             ng-src="{{author.photo ? author.photo : 'images/no-avatar.jpg'}}">
                     </div>
                     <div class="media-body">
                         <h4 class="media-heading">{{author.name}}</h4>
+                        <small>{{author.id}}</small>
                     </div>
                 </div>
             </li>

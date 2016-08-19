@@ -8,11 +8,16 @@ var app = angular.module('scopusInnopolisApp', [
     'ngAnimate',
     'ngRoute',
     'ui.bootstrap',
-    'LocalStorageModule'
+    'LocalStorageModule',
+    'constants',
+    'scopus'
 ]).component('scAuthor', {
     templateUrl: 'components/author.html'
 }).component('scAuthorsCollection', {
-    templateUrl: 'components/authors-collection.html'
+    templateUrl: 'components/authors-collection.html',
+    controller: function () {
+
+    }
 }).component('scPublication', {
     templateUrl: 'components/publication.html',
     bindings: {
@@ -81,57 +86,72 @@ var app = angular.module('scopusInnopolisApp', [
     }
 }).component('scAuthorForm', {
     templateUrl: 'components/author-form.html',
-    controller: function ($http, localStorageService) {
-        var $ctrl = this;
-        this.author = {};
-        this.scAuthor = null;
+    controller: function (localStorageService, $scopus) {
 
-        if (localStorageService.isSupported) {
-            $ctrl.authors = localStorageService.get('authors') || {};
+        var $ctrl = this;
+        this.$onInit = function () {
+            this.author = {};
+            this.preview = null;
+
+            if (localStorageService.isSupported) {
+                $ctrl.authors = localStorageService.get('authors') || {};
+
+                $scopus.getAllIUAuthors().then(
+                    function (authors) {
+                        authors.forEach(function (item) {
+                            $ctrl.authors[item.id] = $ctrl.authors[item.id] || {};
+                            for (var attrname in item) {
+                                if (item.hasOwnProperty(attrname))
+                                    $ctrl.authors[item.id][attrname] = item[attrname];
+                            }
+                        });
+                        localStorageService.set('authors', $ctrl.authors);
+                    }
+                );
+            }
+        };
+
+        function updateAuthor(oldA, newA) {
+            for (var attrname in newA) {
+                if (newA.hasOwnProperty(attrname))
+                    oldA[attrname] = newA[attrname];
+            }
         }
 
         this.onIdUpdate = function () {
-            $http(
-                {
-                    method: 'get',
-                    url: 'http://api.elsevier.com/content/author/author_id/' + $ctrl.author.id,
-                    params: {apiKey: '6476ffc5bf77cddd275cc28a3c71b2fe'}
-                })
-                .then(function (response) {
-                        var result = eval(response.data);
-                        var scAuthors = result['author-retrieval-response'];
-                        if (scAuthors && scAuthors.length > 0) {
-                            var scAuthor = scAuthors[0];
-                            var preferredName = scAuthor['author-profile']['preferred-name'];
-                            $ctrl.scAuthor = {
-                                name: preferredName['given-name'] + ' ' + preferredName['surname'],
-                                id: $ctrl.author.id
-                            };
-                            console.log(scAuthor);
-                            console.log($ctrl.scAuthor);
-                            $http({
-                                method: 'get',
-                                url: 'http://api.elsevier.com/content/search/scopus',
-                                params: {
-                                    apiKey: "6476ffc5bf77cddd275cc28a3c71b2fe",
-                                    query: 'au-id(' + $ctrl.author.id + ')'
-                                }
-                            });
-                        } else {
-                            $ctrl.scAuthor = null;
-                        }
+            $ctrl.preview = null;
+            $ctrl.scopusLoading = true;
+            $scopus.getAuthor($ctrl.author.id).then(
+                function success(author) {
+                    // create if not exists
+                    $ctrl.authors[$ctrl.author.id] = $ctrl.authors[$ctrl.author.id] || {};
+                    updateAuthor($ctrl.authors[$ctrl.author.id], author);
+                    author.documents.forEach(function (item) {
+                        item.authors.forEach(function (item) {
+                            $ctrl.authors[item.id] = $ctrl.authors[item.id] || {};
+                            updateAuthor($ctrl.authors[item.id], item);
+                        });
+                    });
+                    if (localStorageService.isSupported) {
+                        localStorageService.set('authors', $ctrl.authors);
                     }
-                );
+                    $ctrl.scopusLoading = false;
+                    $ctrl.preview = $ctrl.authors[$ctrl.author.id];
+                },
+                function fail() {
+                    $ctrl.preview = null;
+                    $ctrl.scopusLoading = false;
+                }
+            );
         };
         this.save = function () {
-            if (localStorageService.isSupported && ($ctrl.scAuthor)) {
-                if ($ctrl.scAuthor) {
-                    $ctrl.scAuthor.photo = $ctrl.author.photo;
-                    $ctrl.authors[$ctrl.author.id] = $ctrl.scAuthor;
+            if (localStorageService.isSupported && ($ctrl.preview)) {
+                $ctrl.authors[$ctrl.author.id].photo = $ctrl.author.photo;
+                if (localStorageService.isSupported) {
+                    localStorageService.set('authors', $ctrl.authors);
                 }
-                localStorageService.set('authors', $ctrl.authors);
-                console.log($ctrl.authors);
-                $ctrl.scAuthor = null;
+                $ctrl.preview = null;
+                $ctrl.author = null;
             }
         };
     }
