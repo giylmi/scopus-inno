@@ -12,11 +12,15 @@ var app = angular.module('scopusInnopolisApp', [
     'constants',
     'scopus'
 ]).component('scAuthor', {
-    templateUrl: 'components/author.html'
+    templateUrl: 'components/author.html',
+    binding: {
+        author: '<'
+    }
 }).component('scAuthorsCollection', {
     templateUrl: 'components/authors-collection.html',
     controller: function () {
-
+        var $ctrl = this;
+        // $ctrl.authors =
     }
 }).component('scPublication', {
     templateUrl: 'components/publication.html',
@@ -92,6 +96,7 @@ var app = angular.module('scopusInnopolisApp', [
         this.$onInit = function () {
             this.author = {};
             this.preview = null;
+            this.authors = {};
 
             if (localStorageService.isSupported) {
                 $ctrl.authors = localStorageService.get('authors') || {};
@@ -105,6 +110,7 @@ var app = angular.module('scopusInnopolisApp', [
                                     $ctrl.authors[item.id][attrname] = item[attrname];
                             }
                         });
+
                         localStorageService.set('authors', $ctrl.authors);
                     }
                 );

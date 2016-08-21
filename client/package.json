@@ -1,10 +1,6 @@
 {
-  "name": "scopus-inno",
+  "name": "scopus-inno-client",
   "version": "1.0.0",
-  "scripts": {
-    "start": "npm run lite",
-    "lite": "lite-server"
-  },
   "license": "ISC",
   "dependencies": {
     "angular": "1.5.x",
@@ -15,10 +11,6 @@
     "bootstrap": "3.3.x",
     "jquery": "2.2.x",
     "angular-ui-bootstrap": "2.0.2",
-    "angular-local-storage": "^0.2.7"
-  },
-  "devDependencies": {
-    "concurrently": "^2.0.0",
-    "lite-server": "^2.2.0"
+    "angular-local-storage": "^0.2.7",
   }
 }

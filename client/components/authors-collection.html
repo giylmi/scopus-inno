@@ -5,9 +5,6 @@
         <div class="clearfix"></div>
     </div>
     <div class="row">
-        <sc-author></sc-author>
-        <sc-author></sc-author>
-        <sc-author></sc-author>
-        <sc-author></sc-author>
+        <sc-author ng-repeat="author in $ctrl.authors" author="author"></sc-author>
     </div>
 </div>

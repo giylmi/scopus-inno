@@ -1,0 +1,13 @@
+{
+  "name": "scopus-inno-server",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.14.0",
+    "request": "^2.74.0",
+    "log4js": "^0.6.38"
+  }
+}
