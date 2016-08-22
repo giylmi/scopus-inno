@@ -30,6 +30,22 @@ angular.module('scopus', ['constants']).factory('$scopus', ['$http', '$constants
                     reject();
                 });
             });
+        },
+        updateAuthor: function (id, author) {
+            return $q((resolve, reject) => {
+                $http({
+                    method: 'post',
+                    url: 'api/author/' + id,
+                    data: author,
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                }).success(function (response) {
+                    resolve();
+                }).error(function (response) {
+                    reject();
+                });
+            });
         }
     }
 }]);

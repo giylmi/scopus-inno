@@ -3,6 +3,7 @@
  */
 var config = require('./config');
 var request = require('request');
+var q = require('q');
 
 var log4js = require('log4js');
 var logger = log4js.getLogger();
@@ -17,7 +18,6 @@ var scopusRequest = request.defaults({
 
 var allIUAuthors = function () {
     return new Promise((resolve, reject) => {
-        logger.debug('getAllIUAuthors');
         scopusRequest.get({
             method: 'get',
             uri: 'content/search/author',
@@ -25,8 +25,6 @@ var allIUAuthors = function () {
                 query: encodeURI('af-id(' + config.affilId + ')')
             }
         }, function (error, response, data) {
-            logger.debug(response.statusCode
-                + ' ' + response.statusMessage + '\n' + response.rawHeaders);
             if (response.statusCode == 200) {
                 var result = JSON.parse(data);
                 var authors = [];
@@ -52,8 +50,6 @@ var author = function (id) {
             uri: 'content/author/author_id/' + id,
             qs: {view: 'ENHANCED'}
         }, function (error, response, body) {
-            logger.debug(response.statusCode
-                + ' ' + response.statusMessage + '\n' + response.rawHeaders);
             if (response.statusCode == 200) {
                 var result = JSON.parse(body);
                 var scAuthors = result['author-retrieval-response'];
@@ -68,13 +64,11 @@ var author = function (id) {
 
                     scopusRequest({
                         url: 'content/search/scopus',
-                        params: {
+                        qs: {
                             query: encodeURI('au-id(' + id + ')'),
                             view: 'COMPLETE'
                         }
                     }, function (error, response, body) {
-                        logger.debug(response.statusCode
-                            + ' ' + response.statusMessage + '\n' + response.rawHeaders);
                         if (response.statusCode == 200) {
                             var result = JSON.parse(body);
                             var pubs = result['search-results']['entry'];
@@ -84,7 +78,7 @@ var author = function (id) {
                                         eid: item.eid,
                                         title: item['dc:title'],
                                         description: item['dc:description'],
-                                        cited: item['cited-by-count'],
+                                        cited: parseInt(item['citedby-count']),
                                         date: item['prism:coverDate'],
                                         authors: item['author'].map(function (item, i, arr) {
                                             return {
@@ -119,19 +113,25 @@ module.exports = {
     getAuthor: author,
     getAllIUAuthors: allIUAuthors,
     getAllIUAuthorsFullInformation: function () {
-        return new Promise(resolve, reject => {
+        return new Promise((resolve, reject) => {
             allIUAuthors().then(
                 function (authors) {
-                    authors.forEach(function (item) {
-                        author(item.id).then(
+                    var requests = authors.map(function (item) {
+                        return author(item.id).then(
                             function (author) {
                                 for (var attr in author)
                                     if (author.hasOwnProperty(attr))
                                         item[attr] = author[attr];
+
                             },
                             reject
                         );
                     });
+                    q.all(requests).then(
+                        function () {
+                            resolve(authors);
+                        }
+                    );
                 },
                 reject
             );

@@ -39,9 +39,11 @@
                 <p>Author with id {{$ctrl.author.id}} is not found.</p>
             </div>
             <div ng-if="!$ctrl.scopusLoading && $ctrl.preview" class="col-sm-6">
-                <h4>{{$ctrl.preview.name}}</h4>
-                <small>{{$ctrl.preview.id}}</small>
-                <p>{{$ctrl.preview.publications}}</p>
+                <h4>{{$ctrl.preview.name}}
+                    <small>{{$ctrl.preview.id}}</small>
+                </h4>
+                <p>Citations: {{$ctrl.getCitations($ctrl.preview)}}</p>
+                <p>Documents: {{$ctrl.preview.documents ? $ctrl.preview.documents.length : 0}}</p>
             </div>
         </div>
     </div>
@@ -52,15 +54,19 @@
     </div>
     <div class="row">
         <ul class="list-group">
-            <li class="list-group-item" ng-model="$ctrl.authors" ng-repeat="author in $ctrl.authors | orderMapValuesBy:'name'">
+            <li class="list-group-item" ng-model="$ctrl.authors"
+                ng-repeat="author in $ctrl.authors | orderMapValuesBy:'name'">
                 <div class="media">
                     <div class="media-left">
                         <img class="media-object" style="max-width: 100px;"
                              ng-src="{{author.photo ? author.photo : 'images/no-avatar.jpg'}}">
                     </div>
                     <div class="media-body">
-                        <h4 class="media-heading">{{author.name}}</h4>
-                        <small>{{author.id}}</small>
+                        <h4 class="media-heading">{{author.name}}
+                            <small>{{author.id}}</small>
+                        </h4>
+                        <p>Citations: {{$ctrl.getCitations(author)}}</p>
+                        <p>Documents: {{author.documents ? author.documents.length : 0}}</p>
                     </div>
                 </div>
             </li>

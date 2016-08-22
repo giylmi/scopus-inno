@@ -11,9 +11,15 @@ var app = angular.module('scopusInnopolisApp', [
     'LocalStorageModule',
     'constants',
     'scopus'
-]).component('scAuthor', {
+]).component('scAuthorLink', {
+    templateUrl: 'components/author-link.html',
+    bindings: {
+        author: '<',
+        isInno: "="
+    }
+}).component('scAuthor', {
     templateUrl: 'components/author.html',
-    binding: {
+    bindings: {
         author: '<'
     }
 }).component('scAuthorsCollection', {
@@ -29,46 +35,59 @@ var app = angular.module('scopusInnopolisApp', [
     }
 }).component('scPublicationsCollection', {
     templateUrl: 'components/publications-collection.html',
-    controller: function ScPublicationsCollectionController($filter) {
+    controller: function ScPublicationsCollectionController($filter, localStorageService, $scopus) {
+        var $ctrl = this;
         this.$onInit = function () {
             this.orderProp = 'citations';
             this.totalItems = 100;
             this.itemsPerPage = 5;
             this.publications = [];
-            for (var i = 0; i < 100; i++) {
-                this.publications.push({
-                    name: 'Innopolis',
-                    type: 'Conference Paper',
-                    authors: 'Kondratyev, D.a, Tormasov, A.a, Stanko, T.a, Jones, R.C.b, Taran, G.c',
-                    citations: i + 1,
-                    lastCited: 1
-                });
-            }
 
-            this.reorderBy(this.orderProp);
-            // this.publications = [
-            //     {
+            this.authors = {};
+            if (localStorageService.isSupported) {
+                this.authors = localStorageService.get('authors') || {};
+                for (var id in this.authors) {
+                    var pubs = this.authors[id].documents;
+                    if (pubs && pubs.length) {
+                        pubs.forEach(function (item) {
+                            $ctrl.publications.push(item);
+                        });
+                    }
+                }
+            }
+            $scopus.getAllIUAuthors().then(
+                function (authors) {
+                    for (var key in authors) {
+                        var item = authors[key];
+                        $ctrl.authors[item.id] = $ctrl.authors[item.id] || {};
+                        for (var attrname in item) {
+                            if (item.hasOwnProperty(attrname))
+                                $ctrl.authors[item.id][attrname] = item[attrname];
+                        }
+                    }
+
+                    localStorageService.set('authors', $ctrl.authors);
+                    for (var id in $ctrl.authors) {
+                        var pubs = $ctrl.authors[id].documents;
+                        if (pubs && pubs.length) {
+                            pubs.forEach(function (item) {
+                                $ctrl.publications.push(item);
+                            });
+                        }
+                    }
+                }
+            );
+
+            // for (var i = 0; i < 100; i++) {
+            //     this.publications.push({
             //         name: 'Innopolis',
             //         type: 'Conference Paper',
             //         authors: 'Kondratyev, D.a, Tormasov, A.a, Stanko, T.a, Jones, R.C.b, Taran, G.c',
-            //         citations: 10,
-            //         lastCited: 1
-            //     },
-            //     {
-            //         name: 'Univercity',
-            //         type: 'Conference Paper',
-            //         authors: 'Kondratyev, D.a, Tormasov',
-            //         citations: 5,
-            //         lastCited: 2
-            //     },
-            //     {
-            //         name: 'IT',
-            //         type: 'Conference Paper',
-            //         authors: 'Stanko, T.a, Jones, R.C.b, Taran, G.c',
-            //         citations: 6,
-            //         lastCited: 0
-            //     },
-            // ];
+            //         citations: i + 1,
+            //     });
+            // }
+
+            this.reorderBy(this.orderProp);
         };
 
         this.setPage = function (pageNo) {
@@ -100,21 +119,21 @@ var app = angular.module('scopusInnopolisApp', [
 
             if (localStorageService.isSupported) {
                 $ctrl.authors = localStorageService.get('authors') || {};
-
-                $scopus.getAllIUAuthors().then(
-                    function (authors) {
-                        authors.forEach(function (item) {
-                            $ctrl.authors[item.id] = $ctrl.authors[item.id] || {};
-                            for (var attrname in item) {
-                                if (item.hasOwnProperty(attrname))
-                                    $ctrl.authors[item.id][attrname] = item[attrname];
-                            }
-                        });
-
-                        localStorageService.set('authors', $ctrl.authors);
-                    }
-                );
             }
+            $scopus.getAllIUAuthors().then(
+                function (authors) {
+                    for (var key in authors) {
+                        var item = authors[key];
+                        $ctrl.authors[item.id] = $ctrl.authors[item.id] || {};
+                        for (var attrname in item) {
+                            if (item.hasOwnProperty(attrname))
+                                $ctrl.authors[item.id][attrname] = item[attrname];
+                        }
+                    }
+
+                    localStorageService.set('authors', $ctrl.authors);
+                }
+            );
         };
 
         function updateAuthor(oldA, newA) {
@@ -124,6 +143,16 @@ var app = angular.module('scopusInnopolisApp', [
             }
         }
 
+        this.getCitations = function (author) {
+            var result = 0;
+            if (author.documents)
+                author.documents.forEach(function (item) {
+                    if (item.cited)
+                        result += parseInt(item.cited);
+                });
+            return result;
+        };
+
         this.onIdUpdate = function () {
             $ctrl.preview = null;
             $ctrl.scopusLoading = true;
@@ -132,12 +161,7 @@ var app = angular.module('scopusInnopolisApp', [
                     // create if not exists
                     $ctrl.authors[$ctrl.author.id] = $ctrl.authors[$ctrl.author.id] || {};
                     updateAuthor($ctrl.authors[$ctrl.author.id], author);
-                    author.documents.forEach(function (item) {
-                        item.authors.forEach(function (item) {
-                            $ctrl.authors[item.id] = $ctrl.authors[item.id] || {};
-                            updateAuthor($ctrl.authors[item.id], item);
-                        });
-                    });
+
                     if (localStorageService.isSupported) {
                         localStorageService.set('authors', $ctrl.authors);
                     }
@@ -151,14 +175,19 @@ var app = angular.module('scopusInnopolisApp', [
             );
         };
         this.save = function () {
+            $ctrl.authors[$ctrl.author.id].photo = $ctrl.author.photo;
+            // todo: add handlers
+            $scopus.updateAuthor($ctrl.author.id, {
+                id: $ctrl.author.id,
+                photo: $ctrl.authors[$ctrl.author.id].photo
+            });
             if (localStorageService.isSupported && ($ctrl.preview)) {
-                $ctrl.authors[$ctrl.author.id].photo = $ctrl.author.photo;
                 if (localStorageService.isSupported) {
                     localStorageService.set('authors', $ctrl.authors);
                 }
-                $ctrl.preview = null;
-                $ctrl.author = null;
             }
+            $ctrl.preview = null;
+            $ctrl.author = null;
         };
     }
 }).component('app', {

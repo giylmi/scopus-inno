@@ -8,6 +8,8 @@
   "dependencies": {
     "express": "^4.14.0",
     "request": "^2.74.0",
-    "log4js": "^0.6.38"
+    "log4js": "^0.6.38",
+    "q": "^1.4.1",
+    "body-parser": "^1.15.2"
   }
 }
