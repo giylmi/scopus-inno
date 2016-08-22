@@ -38,7 +38,7 @@ var app = angular.module('scopusInnopolisApp', [
     controller: function ScPublicationsCollectionController($filter, localStorageService, $scopus) {
         var $ctrl = this;
         this.$onInit = function () {
-            this.orderProp = 'citations';
+            this.orderProp = 'cited';
             this.totalItems = 100;
             this.itemsPerPage = 5;
             this.publications = [];
